@@ -1,0 +1,20 @@
+# Dependencies
+node_modules
+package-lock.json
+yarn.lock
+.next
+
+
+# Build files
+build
+public/build
+
+# Environment variables
+.env
+.env.local
+
+# IDE settings
+.vscode
+
+# Other
+.DS_Store

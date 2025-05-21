@@ -8,7 +8,7 @@
 
 ## 🌐 Live Preview
 
-👉 [**Live App**](https://streak-tracker-orpin.vercel.app)
+👉 [**Live App**](https://streak-tracker-psi.vercel.app/)
 
 ---
 

@@ -70,9 +70,8 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
   // Parse the last completed date
   const parseDate = (dateStr: string | null): Date | null => {
     if (!dateStr) return null;
-    // The date is in DD/MM/YYYY format
     const [day, month, year] = dateStr.split('/').map(Number);
-    // Note: Month is 0-indexed in JavaScript Date (0 = January, 11 = December)
+    
     return new Date(year, month - 1, day);
   };
 
@@ -82,8 +81,6 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
   // Check if the streak was completed today
   const isCompletedToday = lastCompletedDate ? isSameDay(today, lastCompletedDate) : false;
   
-  // For debugging
-  // console.log("today:", today.toLocaleDateString('en-GB'), "lastCompleted:", lastCompletedDate?.toLocaleDateString('en-GB'));
   const progressPercentage = Math.min((streak.currentStreak / 30) * 100, 100)
   const isStreakCelebrating = celebratingId === streak.id
   const descriptionLines = streak.description?.split('\n') || []

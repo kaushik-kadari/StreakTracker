@@ -86,6 +86,8 @@ exports.completeStreak = async (req, res) => {
         const todayISO = today.toISOString();
         const todayString = today.toLocaleDateString();
 
+        // console.log("today:", todayString, "lastCompleted:", streak.lastCompleted);
+
         // Check if streak was already completed today
         if (streak.history.includes(todayISO)) {
             return res.status(400).json({ message: 'Streak already completed today' });

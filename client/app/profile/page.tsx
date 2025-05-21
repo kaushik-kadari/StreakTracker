@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { Eye, EyeOff, X, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,9 @@ function ProfileContent() {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   // Loading states
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false)
@@ -31,6 +35,44 @@ function ProfileContent() {
 
   // Validation states
   const [passwordError, setPasswordError] = useState("")
+  const [passwordStrength, setPasswordStrength] = useState({ score: 0, feedback: "" })
+
+  const validatePassword = (password: string) => {
+    if (password.length < 8) {
+      return { isValid: false, message: "Password must be at least 8 characters long" }
+    }
+    if (!/[A-Z]/.test(password)) {
+      return { isValid: false, message: "Password must contain at least one uppercase letter" }
+    }
+    if (!/[a-z]/.test(password)) {
+      return { isValid: false, message: "Password must contain at least one lowercase letter" }
+    }
+    if (!/[0-9]/.test(password)) {
+      return { isValid: false, message: "Password must contain at least one number" }
+    }
+    if (!/[!@#$%^&*_]/.test(password)) {
+      return { isValid: false, message: "Password must contain at least one special character (!@#$%^&*_)" }
+    }
+    return { isValid: true, message: "" }
+  }
+
+  const checkPasswordStrength = (password: string) => {
+    let score = 0
+    let feedback = []
+    
+    if (password.length >= 8) score++
+    if (/[A-Z]/.test(password)) score++
+    if (/[a-z]/.test(password)) score++
+    if (/[0-9]/.test(password)) score++
+    if (/[!@#$%^&*]/.test(password)) score++
+    
+    // Provide feedback based on score
+    if (score <= 2) feedback.push("Weak password")
+    else if (score <= 4) feedback.push("Moderate password")
+    else feedback.push("Strong password")
+    
+    setPasswordStrength({ score, feedback: feedback.join(". ") })
+  }
 
   // Redirect if not logged in
   useEffect(() => {
@@ -72,14 +114,28 @@ function ProfileContent() {
       return
     }
 
-    // Validate new passwords
+    // Validate new passwords match
     if (newPassword !== confirmPassword) {
       setPasswordError("New passwords do not match")
       return
     }
 
-    if (newPassword.length < 6) {
-      setPasswordError("New password must be at least 6 characters")
+    // Validate new password strength
+    const { isValid, message } = validatePassword(newPassword)
+    if (!isValid) {
+      setPasswordError(message)
+      return
+    }
+
+    // Additional check for common passwords or patterns
+    if (newPassword.toLowerCase().includes('password') || newPassword.toLowerCase().includes('123')) {
+      setPasswordError("Please choose a stronger password")
+      return
+    }
+
+    // Check if new password is different from current
+    if (newPassword === currentPassword) {
+      setPasswordError("New password must be different from current password")
       return
     }
 
@@ -161,7 +217,14 @@ function ProfileContent() {
                     </div>
 
                     <Button type="submit" disabled={isUpdatingProfile}>
-                      {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                      {isUpdatingProfile ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Profile"
+                      )}
                     </Button>
                   </form>
                 </CardContent>
@@ -178,45 +241,167 @@ function ProfileContent() {
                   <form onSubmit={handlePasswordUpdate} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="current-password">Current Password</Label>
-                      <Input
-                        id="current-password"
-                        type="password"
-                        value={currentPassword}
-                        onChange={(e) => setCurrentPassword(e.target.value)}
-                        disabled={isUpdatingPassword}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="current-password"
+                          type={showCurrentPassword ? "text" : "password"}
+                          value={currentPassword}
+                          onChange={(e) => {
+                            setCurrentPassword(e.target.value)
+                            if (passwordError) setPasswordError("")
+                          }}
+                          disabled={isUpdatingPassword}
+                          className={`pr-20 ${passwordError && !currentPassword ? "border-red-500" : ""}`}
+                          required
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex space-x-1">
+                          <button
+                            type="button"
+                            className="text-gray-400 hover:text-gray-600 p-1"
+                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                          >
+                            {showCurrentPassword ? 
+                              <EyeOff className="h-4 w-4" /> : 
+                              <Eye className="h-4 w-4" />
+                            }
+                          </button>
+                          {currentPassword && (
+                            <button
+                              type="button"
+                              className="text-gray-400 hover:text-gray-600 p-1"
+                              onClick={() => setCurrentPassword("")}
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {passwordError && !currentPassword && (
+                        <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+                      )}
                     </div>
-
-                    <Separator className="my-4" />
 
                     <div className="space-y-2">
                       <Label htmlFor="new-password">New Password</Label>
-                      <Input
-                        id="new-password"
-                        type="password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        disabled={isUpdatingPassword}
-                        required
-                      />
+                      <div className="relative">
+                        <Input
+                          id="new-password"
+                          type={showNewPassword ? "text" : "password"}
+                          value={newPassword}
+                          onChange={(e) => {
+                            setNewPassword(e.target.value)
+                            checkPasswordStrength(e.target.value)
+                            if (passwordError) setPasswordError("")
+                          }}
+                          onBlur={() => {
+                            const { isValid, message } = validatePassword(newPassword)
+                            if (!isValid && newPassword) {
+                              setPasswordError(message)
+                            }
+                          }}
+                          disabled={isUpdatingPassword}
+                          className={`pr-20 ${passwordError && newPassword ? "border-red-500" : ""}`}
+                          required
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex space-x-1">
+                          <button
+                            type="button"
+                            className="text-gray-400 hover:text-gray-600 p-1"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                          >
+                            {showNewPassword ? 
+                              <EyeOff className="h-4 w-4" /> : 
+                              <Eye className="h-4 w-4" />
+                            }
+                          </button>
+                          {newPassword && (
+                            <button
+                              type="button"
+                              className="text-gray-400 hover:text-gray-600 p-1"
+                              onClick={() => setNewPassword("")}
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {newPassword && (
+                        <div className="mt-1">
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                            <div 
+                              className={`h-2.5 rounded-full ${
+                                passwordStrength.score <= 2 ? 'bg-red-500' : 
+                                passwordStrength.score <= 4 ? 'bg-yellow-500' : 'bg-green-500'
+                              }`} 
+                              style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {passwordStrength.feedback}
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="confirm-password">Confirm New Password</Label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        disabled={isUpdatingPassword}
-                        required
-                      />
-                      {passwordError && <p className="text-sm text-destructive mt-1">{passwordError}</p>}
+                      <div className="relative">
+                        <Input
+                          id="confirm-password"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => {
+                            setConfirmPassword(e.target.value)
+                            if (passwordError) setPasswordError("")
+                          }}
+                          onBlur={() => {
+                            if (newPassword !== confirmPassword) {
+                              setPasswordError("Passwords do not match")
+                            }
+                          }}
+                          disabled={isUpdatingPassword}
+                          className={`pr-20 ${passwordError && confirmPassword && newPassword !== confirmPassword ? "border-red-500" : ""}`}
+                          required
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex space-x-1">
+                          <button
+                            type="button"
+                            className="text-gray-400 hover:text-gray-600 p-1"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          >
+                            {showConfirmPassword ? 
+                              <EyeOff className="h-4 w-4" /> : 
+                              <Eye className="h-4 w-4" />
+                            }
+                          </button>
+                          {confirmPassword && (
+                            <button
+                              type="button"
+                              className="text-gray-400 hover:text-gray-600 p-1"
+                              onClick={() => setConfirmPassword("")}
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {passwordError && (
+                        <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+                      )}
                     </div>
 
-                    <Button type="submit" disabled={isUpdatingPassword}>
-                      {isUpdatingPassword ? "Updating..." : "Update Password"}
+                    <Button 
+                      type="submit" 
+                      disabled={isUpdatingPassword}
+                    >
+                      {isUpdatingPassword ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Password"
+                      )}
                     </Button>
                   </form>
                 </CardContent>

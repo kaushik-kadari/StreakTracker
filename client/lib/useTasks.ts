@@ -35,8 +35,6 @@ export function useTasks(token: string | null) {
     }, [token]);
 
     const createTask = async (task : string, completed : boolean) => {
-        console.log(task, completed)
-        console.log(token)
         if (!token) return;
         try {
             const newTask = await api.createTask(token, { task, completed });

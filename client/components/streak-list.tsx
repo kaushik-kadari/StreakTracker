@@ -67,19 +67,21 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
            date1.getDate() === date2.getDate();
   };
 
-  // Parse the last completed date
+  // Parse the last completed date in DD/MM/YYYY format
   const parseDate = (dateStr: string | null): Date | null => {
     if (!dateStr) return null;
     const [day, month, year] = dateStr.split('/').map(Number);
-    
     return new Date(year, month - 1, day);
   };
 
+  // Get today's date and format it as DD/MM/YYYY for comparison
   const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayFormatted = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
   const lastCompletedDate = parseDate(streak.lastCompleted);
   
-  // Check if the streak was completed today
-  const isCompletedToday = lastCompletedDate ? isSameDay(today, lastCompletedDate) : false;
+  // Check if the streak was completed today by comparing formatted strings
+  const isCompletedToday = lastCompletedDate ? todayFormatted === streak.lastCompleted : false;
   
   const progressPercentage = Math.min((streak.currentStreak / 30) * 100, 100)
   const isStreakCelebrating = celebratingId === streak.id
@@ -267,7 +269,7 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
             className={`w-full gap-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis ${
               isCompletedToday 
                 ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 border-green-200 dark:border-green-800/50 hover:bg-green-50 dark:hover:bg-green-900/30' 
-                : 'bg-gradient-to-r from-green-400 to-lime-400 hover:from-green-500 hover:to-lime-500 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5'
+                : 'bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5'
             }`}
           >
             {isCompletedToday ? (

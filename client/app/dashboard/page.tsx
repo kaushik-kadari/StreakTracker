@@ -102,11 +102,6 @@ function DashboardContent() {
   
   // Handle streak achievements
   useStreakAchievements(streaks, toastSuccess);
-  
-  // Show loading state if auth is still loading or not on client side yet
-  if (authLoading || !isClient) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#ece9e9] via-[#fff] to-[#f5f5f5] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -182,8 +177,6 @@ function DashboardContent() {
 
                     setEditingStreak(editingData)
                     setNewStreakOpen(true)
-                  } else {
-                    console.error('Streak not found for ID:', id);
                   }
                 }}
                 onDelete={deleteStreak}

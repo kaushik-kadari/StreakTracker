@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Eye, EyeOff, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,9 +20,38 @@ export default function RegisterPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [passwordError, setPasswordError] = useState("")
+
+  const validatePassword = (password: string) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long"
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Password must contain at least one uppercase letter"
+    }
+    if (!/[a-z]/.test(password)) {
+      return "Password must contain at least one lowercase letter"
+    }
+    if (!/[0-9]/.test(password)) {
+      return "Password must contain at least one number"
+    }
+    if (!/[!@#$%^&*_]/.test(password)) {
+      return "Password must contain at least one special character (!@#$%^&*_)"
+    }
+    return ""
+  }
 
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
+    setPasswordError("")
+    
+    const passwordValidationError = validatePassword(password)
+    if (passwordValidationError) {
+      setPasswordError(passwordValidationError)
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -81,18 +111,59 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                disabled={isLoading}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  disabled={isLoading}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (passwordError) {
+                      const error = validatePassword(e.target.value)
+                      setPasswordError(error)
+                    }
+                  }}
+                  onBlur={() => setPasswordError(validatePassword(password))}
+                  className={`pr-20 ${passwordError ? "border-red-500" : ""}`}
+                  required
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex space-x-1">
+                  <button
+                    type="button"
+                    className="text-gray-400 hover:text-gray-600 p-1"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? 
+                      <EyeOff className="h-4 w-4" /> : 
+                      <Eye className="h-4 w-4" />
+                    }
+                  </button>
+                  {password && (
+                    <button
+                      type="button"
+                      className="text-gray-400 hover:text-gray-600 p-1"
+                      onClick={() => setPassword("")}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {passwordError && (
+                <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+              )}
             </div>
-            <Button className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Create Account"}
+            <Button className="w-full dark:text-white hover:-translate-y-1 transition-all duration-300" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </Button>
           </form>
         </CardContent>

@@ -29,16 +29,16 @@ export default function Header() {
 
   return (
     <header className="bg-gradient-to-b from-[#d5d4d2] to-[#fffdfa] border-b dark:border-b-slate-700 border-blue-100/50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="container flex h-20 items-center justify-between">
-        <div className="flex items-center gap-2">
+      <div className="container flex max-w-7xl items-center justify-between px-4 py-2 md:px-6">
+        <div className="flex flex-1 items-center gap-2">
           <motion.div
-            className="h-20 w-20 rounded-lg flex items-center justify-center"
+            className="h-20 w-20 rounded-lg flex items-center justify-center md:h-24 md:w-24"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
             <Image src="/StreakTracker_logo.png" alt="StreakTracker Logo" width={64} height={64} className="rounded-xl m-2" />
           </motion.div>
-          <Link href="/dashboard" className="font-bold text-lg">
+          <Link href="/dashboard" className="font-bold text-lg md:text-2xl">
             StreakTracker
           </Link>
         </div>

@@ -60,19 +60,30 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
   const [deleteTargetStreak, setDeleteTargetStreak] = useState<Streak | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
 
-  // Calculate if streak was completed today
-  // Normalize both dates to ensure consistent format
-  const normalizeDate = (dateStr: string | null): string => {
-    if (!dateStr) return '';
-    const [day, month, year] = dateStr.split('/');
-    return `${parseInt(day, 10)}/${parseInt(month, 10)}/${year}`;
+  // Function to check if two dates are the same day
+  const isSameDay = (date1: Date, date2: Date): boolean => {
+    return date1.getFullYear() === date2.getFullYear() &&
+           date1.getMonth() === date2.getMonth() &&
+           date1.getDate() === date2.getDate();
   };
 
-  const today = normalizeDate(new Date().toLocaleDateString('en-GB'));
-  const lastCompleted = normalizeDate(streak.lastCompleted);
+  // Parse the last completed date
+  const parseDate = (dateStr: string | null): Date | null => {
+    if (!dateStr) return null;
+    // The date is in DD/MM/YYYY format
+    const [day, month, year] = dateStr.split('/').map(Number);
+    // Note: Month is 0-indexed in JavaScript Date (0 = January, 11 = December)
+    return new Date(year, month - 1, day);
+  };
+
+  const today = new Date();
+  const lastCompletedDate = parseDate(streak.lastCompleted);
   
-  // Compare using normalized dates
-  const isCompletedToday = lastCompleted === today;
+  // Check if the streak was completed today
+  const isCompletedToday = lastCompletedDate ? isSameDay(today, lastCompletedDate) : false;
+  
+  // For debugging
+  // console.log("today:", today.toLocaleDateString('en-GB'), "lastCompleted:", lastCompletedDate?.toLocaleDateString('en-GB'));
   const progressPercentage = Math.min((streak.currentStreak / 30) * 100, 100)
   const isStreakCelebrating = celebratingId === streak.id
   const descriptionLines = streak.description?.split('\n') || []
@@ -110,7 +121,7 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
       transition={{ duration: 0.3, delay: index * 0.1 }}
       className="h-full flex"
     >
-      <Card className="relative overflow-visible shadow-md hover:shadow-xl bg-gradient-to-br from-[#ece9e9] via-[#fff] to-[#f5f5f5] dark:from-gray-700/70 dark:via-gray-700/70 dark:to-gray-700/70 border border-blue-100/50 dark:border-slate-700 hover:border-blue-100 dark:hover:border-slate-500 transition-all duration-300 group flex flex-col w-full self-start">
+      <Card className="relative overflow-hidden shadow-md hover:shadow-xl bg-gradient-to-br from-[#ece9e9] via-[#fff] to-[#f5f5f5] dark:from-gray-800/70 dark:via-gray-800/70 dark:to-gray-900/70 border border-blue-100 dark:border-slate-700 hover:border-blue-100 dark:hover:border-slate-500 transition-all duration-300 group flex flex-col w-full self-start max-w-full">
         {celebratingId === streak.id && <Celebration isActive={isStreakCelebrating} />}
 
         <DeleteConfirmationDialog
@@ -127,16 +138,30 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
           confirmText="Delete"
           cancelText="Cancel"
         />
-        <CardHeader className="pb-2 relative">
+        <CardHeader className={`pb-2 relative ${isCompletedToday ? 'pt-3' : ''}`}>
+          {isCompletedToday && (
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/30 dark:to-blue-900/20 -z-10">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.1),transparent_70%)]"></div>
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-t-lg" />
-          <div className="flex flex-col">
-            <div className="flex justify-between items-start gap-2">
-              <h3 
-                className="font-semibold text-lg truncate text-black dark:text-white"
-                title={streak.name}
-              >
-                {streak.name}
-              </h3>
+          <div className="flex flex-col w-full">
+            <div className="flex items-start w-full gap-2">
+              {isCompletedToday && (
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50">
+                    <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" strokeWidth={2.5} />
+                  </div>
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <h3 
+                  className={`font-semibold text-lg truncate ${isCompletedToday ? 'text-emerald-700 dark:text-emerald-300' : 'text-black dark:text-white'}`}
+                  title={streak.name}
+                >
+                  {streak.name}
+                </h3>
+              </div>
               <div className="flex-shrink-0 flex space-x-1">
                 <Button
                   variant="ghost"
@@ -156,7 +181,7 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
                 </Button>
               </div>
             </div>
-            <div className="mt-1">
+            <div className="mt-3">
               <div className="relative">
                 <div className="relative group">
                   <div className="relative">
@@ -193,7 +218,7 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-2">
+        <CardContent className="pt-3">
           <div className="flex items-center justify-between mb-3">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30 px-3 py-1 text-orange-500 dark:text-orange-300 border border-orange-200/50 dark:border-orange-800/30 shadow-sm">
               {isCompletedToday ? (
@@ -242,7 +267,7 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
             variant={isCompletedToday ? 'outline' : 'default'}
             onClick={handleComplete}
             disabled={isCompletedToday}
-            className={`w-full gap-2 transition-all duration-300 ${
+            className={`w-full gap-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis ${
               isCompletedToday 
                 ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 border-green-200 dark:border-green-800/50 hover:bg-green-50 dark:hover:bg-green-900/30' 
                 : 'bg-gradient-to-r from-green-400 to-lime-400 hover:from-green-500 hover:to-lime-500 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5'

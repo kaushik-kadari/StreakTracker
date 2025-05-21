@@ -12,17 +12,31 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+let connected = false;
+
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/streak-tracker', {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('MongoDB Connected'))
+.then(() => {
+    console.log('MongoDB Connected');
+    connected = true;
+})
 .catch(err => console.log(err));
 
 // sample test route
 app.get('/', (req, res) => {
     res.send('Welcome to StreakTracker API');
+});
+
+// mongoDB connection check
+app.get('/api/db', (req, res) => {
+    if (connected) {
+        res.send('Connected to MongoDB');
+    } else {
+        res.send('Not connected to MongoDB');
+    }
 });
 
 // Routes

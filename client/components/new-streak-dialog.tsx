@@ -34,7 +34,7 @@ interface NewStreakDialogProps {
 
 export default function NewStreakDialog({ open, onOpenChange, onAdd, initialData }: NewStreakDialogProps) {
   const { toastError } = useToast()
-  const MAX_NAME_LENGTH = 30
+  const MAX_NAME_LENGTH = 16
   const MAX_DESCRIPTION_LENGTH = 100
   
   const [name, setName] = useState("")
@@ -152,7 +152,7 @@ export default function NewStreakDialog({ open, onOpenChange, onAdd, initialData
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">{initialData?.id ? 'Update' : 'Create'} Streak</Button>
+            <Button type="submit" className="w-full dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white">{initialData?.id ? 'Update' : 'Create'} Streak</Button>
           </DialogFooter>
         </form>
       </DialogContent>

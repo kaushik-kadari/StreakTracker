@@ -26,12 +26,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true) // Start with true to indicate initial loading
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
   // Fetch user data when token changes
   useEffect(() => {
     const fetchUserData = async () => {
       if (token && !user) {
         try {
-          const response = await fetch('http://localhost:5000/api/auth/me', {
+          const response = await fetch(`${API_URL}/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },

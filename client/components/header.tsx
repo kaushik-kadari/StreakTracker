@@ -28,7 +28,7 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-gradient-to-b from-[#d5d4d2] to-[#fffdfa] border-b dark:border-b-slate-700  dark:from-[#1e1e1e] dark:to-[#2b2b2b]">
+    <header className="bg-gradient-to-b from-[#d5d4d2] to-[#fffdfa] border-b dark:border-b-slate-700 border-blue-100/50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="container flex h-20 items-center justify-between">
         <div className="flex items-center gap-2">
           <motion.div

@@ -89,8 +89,8 @@ export default function TaskList({ tasks, onAdd, onUpdate, onComplete, onDelete 
   }
 
   return (
-    <Card className="bg-gradient-to-br from-[#f5f5f5] to-white/90 dark:from-gray-700/70 dark:to-gray-800/70 backdrop-blur-sm border border-blue-100/50 dark:border-slate-700 overflow-hidden">
-      <CardHeader className="relative bg-gradient-to-r from-[#fafafa] to-[#f0f0f0] dark:from-slate-700/60 dark:to-slate-700/40 border-b border-blue-100/50 dark:border-slate-700/30">
+    <Card className="bg-gradient-to-br from-[#f5f5f5] to-white/90 dark:from-gray-800/70 dark:to-gray-900/70 backdrop-blur-sm border border-blue-100/50 dark:border-slate-700 overflow-hidden">
+      <CardHeader className="relative bg-gradient-to-r from-[#fafafa] to-[#f0f0f0] dark:from-slate-800/60 dark:to-slate-800/40 border-b border-blue-100/50 dark:border-slate-700/30">
         <div 
           className="absolute inset-0 opacity-20" 
           style={{

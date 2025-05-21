@@ -84,7 +84,11 @@ exports.completeStreak = async (req, res) => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const todayISO = today.toISOString();
-        const todayString = today.toLocaleDateString();
+        // Format date as DD/MM/YYYY consistently
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const year = today.getFullYear();
+        const todayString = `${day}/${month}/${year}`;
 
         // console.log("today:", todayString, "lastCompleted:", streak.lastCompleted);
 

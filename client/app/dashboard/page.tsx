@@ -117,7 +117,7 @@ function DashboardContent() {
               
               {user?.name && (
                 <div 
-                  className="bg-gradient-to-br from-[#fff] via-[#fafafa] to-[#ece9e9] dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-4 rounded-xl shadow-md transform transition-all duration-300 hover:shadow-lg"
+                  className="bg-gradient-to-br from-[#fff] via-[#fafafa] to-[#ece9e9] dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-4 rounded-xl shadow-md transform transition-all duration-300 hover:shadow-lg hover:scale-105"
                 >
                   <div className="flex items-center gap-3">
                     <div className="h-12 w-12 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center">

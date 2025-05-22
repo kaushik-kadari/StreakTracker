@@ -57,7 +57,7 @@ function Home() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="mt-3 bg-white/80 hover:bg-white text-indigo-600 border-indigo-300 hover:border-indigo-400 px-8 py-6 text-lg shadow-sm hover:shadow-md transition-all duration-300"
+                    className="mt-3 bg-white/80 hover:bg-white hover:text-black text-indigo-600 border-indigo-300 hover:border-indigo-400 px-8 py-6 text-lg shadow-sm hover:shadow-md transition-all duration-300"
                   >
                     Sign In
                   </Button>

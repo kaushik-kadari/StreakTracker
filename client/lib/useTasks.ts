@@ -64,13 +64,36 @@ export function useTasks(token: string | null) {
 
     const toggleTask = async (id: string) => {
         if (!token) return;
+        
+        // Find the task being toggled
+        const taskToToggle = tasks.find(task => task.id === id);
+        if (!taskToToggle) return;
+        
+        // Save the current tasks in case we need to rollback
+        const originalTasks = [...tasks];
+        
         try {
-            await api.toggleTask(token, id);
-            setTasks(tasks.map(task => 
+            // Optimistically update the UI
+            const updatedTasks = tasks.map(task => 
                 task.id === id ? { ...task, completed: !task.completed } : task
-            ));
+            );
+            setTasks(updatedTasks);
+            
+            // Make the API call
+            const updatedTask = await api.toggleTask(token, id);
+            
+            // Update the task with the server response
+            setTasks(prevTasks => 
+                prevTasks.map(task => 
+                    task.id === id ? updatedTask : task
+                )
+            );
+            
         } catch (error) {
             console.error('Error toggling task:', error);
+            // Revert to original state on error
+            setTasks(originalTasks);
+            toastError('Failed to update task status');
             throw error;
         }
     };

@@ -89,7 +89,7 @@ export default function TaskList({ tasks, onAdd, onUpdate, onComplete, onDelete 
   }
 
   return (
-    <Card className="bg-gradient-to-br from-[#f5f5f5] to-white/90 dark:from-gray-800/70 dark:to-gray-900/70 backdrop-blur-sm border border-blue-100/50 dark:border-slate-700 overflow-hidden">
+    <Card className="bg-gradient-to-br from-[#f5f5f5] to-white/90 dark:from-gray-800/70 dark:to-gray-900/70 backdrop-blur-sm border border-blue-100/50 dark:border-slate-700 hover:border-blue-100 dark:hover:border-slate-500 transition-all duration-300 overflow-hidden">
       <CardHeader className="relative bg-gradient-to-r from-[#fafafa] to-[#f0f0f0] dark:from-slate-800/60 dark:to-slate-800/40 border-b border-blue-100/50 dark:border-slate-700/30">
         <div 
           className="absolute inset-0 opacity-20" 
@@ -196,32 +196,37 @@ export default function TaskList({ tasks, onAdd, onUpdate, onComplete, onDelete 
                     <div className="w-full">
                       <div className="flex items-start gap-3 border-b border-blue-100/50 dark:border-slate-700">
                         <div className="relative flex-shrink-0 mt-0.5">
-                          <Checkbox
-                            id={`task-${task.id}`}
-                            checked={task.completed}
-                            onCheckedChange={() => onComplete(task.id)}
-                            className={cn(
-                              "h-5 w-5 rounded-full border-2 border-green-200 data-[state=checked]:bg-green-400 data-[state=checked]:border-green-400 data-[state=checked]:text-white",
-                              "focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
-                            )}
-                          >
+                          <label className="cursor-pointer" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={task.completed}
+                              onChange={() => onComplete(task.id)}
+                              className={cn(
+                                "appearance-none h-5 w-5 rounded-full border-2 border-green-500",
+                                "checked:bg-green-500 checked:border-green-500",
+                                "relative flex items-center justify-center cursor-pointer",
+                              )}
+                            />
                             {task.completed && (
-                              <Check className="h-3 w-3 text-white" />
+                              <Check 
+                                className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-5 w-3 text-white font-bold pointer-events-none" 
+                                strokeWidth={3}
+                              />
                             )}
-                          </Checkbox>
-                          {task.completed && (
-                            <div className="absolute inset-0 rounded-full bg-green-500/10 animate-ping opacity-0" />
-                          )}
+                            {task.completed && (
+                              <div className="absolute inset-0 rounded-full bg-green-500/10 animate-ping opacity-0" />
+                            )}
+                          </label>
                         </div>
-                        <label
-                          htmlFor={`task-${task.id}`}
+                        <div 
                           className={`flex-1 text-sm min-w-0 ${task.completed ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-300'}`}
                           title={task.task.length > 50 ? task.task : ''}
+                          onClick={() => onComplete(task.id)}
                         >
-                          <div className="whitespace-pre-wrap break-words">
+                          <div className="whitespace-pre-wrap break-words cursor-pointer">
                             {task.task}
                           </div>
-                        </label>
+                        </div>
                         <div className="flex-shrink-0 flex gap-1">
                           <Button
                             size="icon"

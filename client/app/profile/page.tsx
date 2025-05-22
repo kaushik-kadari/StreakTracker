@@ -74,16 +74,14 @@ function ProfileContent() {
     setPasswordStrength({ score, feedback: feedback.join(". ") })
   }
 
-  // Redirect if not logged in
+  // Set form data when user is loaded
   useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login")
-    } else if (user) {
+    if (user) {
       // Populate form with current user data
-      setName(user.name)
-      setEmail(user.email)
+      setName(user.name || '')
+      setEmail(user.email || '')
     }
-  }, [user, isLoading, router])
+  }, [user])
 
   const handleProfileUpdate = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
@@ -170,7 +168,7 @@ function ProfileContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50/20 via-amber-50/20 to-amber-50/20 dark:from-gray-900/20 dark:via-gray-800/20 dark:to-gray-700/20">
       <Header />
       <main className="container py-6">
         <div className="mb-8">
@@ -216,7 +214,7 @@ function ProfileContent() {
                       />
                     </div>
 
-                    <Button type="submit" disabled={isUpdatingProfile}>
+                    <Button type="submit" disabled={isUpdatingProfile} className="dark:text-white hover:scale-105 transition-all duration-300">
                       {isUpdatingProfile ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -393,6 +391,7 @@ function ProfileContent() {
                     <Button 
                       type="submit" 
                       disabled={isUpdatingPassword}
+                      className="dark:text-white hover:scale-105 transition-all duration-300"
                     >
                       {isUpdatingPassword ? (
                         <>

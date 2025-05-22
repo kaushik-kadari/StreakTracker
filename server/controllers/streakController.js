@@ -81,16 +81,17 @@ exports.completeStreak = async (req, res) => {
             return res.status(404).json({ message: 'Streak not found' });
         }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Get the current date in the user's timezone (Asia/Kolkata)
+        const now = new Date();
+        // Format the date in user's local timezone
+        const options = { timeZone: 'Asia/Kolkata' };
+        const dateStr = now.toLocaleDateString('en-US', options);
+        const [month, day, year] = dateStr.split('/').map(Number);
+        
+        // Create date objects for comparison
+        const today = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
+        const todayString = `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`;
         const todayISO = today.toISOString();
-        // Format date as DD/MM/YYYY consistently
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = today.getFullYear();
-        const todayString = `${day}/${month}/${year}`;
-
-        // console.log("today:", todayString, "lastCompleted:", streak.lastCompleted);
 
         // Check if streak was already completed today
         if (streak.history.includes(todayISO)) {

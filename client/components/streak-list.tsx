@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import StreakCalendar from "@/components/streak-calendar"
 import { motion } from "framer-motion"
-import { Streak } from "@/hooks/use-streaks"
+import { Streak } from "@/lib/useStreaks"
 import Celebration from "./celebration"
 import DeleteConfirmationDialog from "./delete-confirmation-dialog"
+import { ConfirmDialog } from "./confirm-dialog"
 
 interface StreakListProps {
   streaks: Streak[]
@@ -55,10 +56,12 @@ export default function StreakList({ streaks, onComplete, onEdit, onDelete }: St
 function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardProps) {
   const [isCelebrating, setIsCelebrating] = useState(false)
   const [celebratingId, setCelebratingId] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteTargetStreak, setDeleteTargetStreak] = useState<Streak | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false)
+  const [pendingCompleteId, setPendingCompleteId] = useState<string | null>(null)
+  const [isCompleting, setIsCompleting] = useState(false)
 
   // Function to check if two dates are the same day
   const isSameDay = (date1: Date, date2: Date): boolean => {
@@ -93,16 +96,33 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
     setIsExpanded(prev => !prev)
   }
 
-  const handleComplete = () => {
+  const handleCompleteClick = () => {
     if (!isCompletedToday) {
-      setCelebratingId(streak.id)
+      setPendingCompleteId(streak.id)
+      setShowCompleteConfirm(true)
+    }
+  }
+
+  const handleConfirmComplete = async () => {
+    if (!pendingCompleteId) return
+    
+    setIsCompleting(true)
+    try {
+      await onComplete(pendingCompleteId)
+      setCelebratingId(pendingCompleteId)
       setIsCelebrating(true)
-      onComplete(streak.id)
+      
       // Stop celebration after 3 seconds
       setTimeout(() => {
         setIsCelebrating(false)
-        setTimeout(() => setCelebratingId(null), 1000)
+        setCelebratingId(null)
       }, 3000)
+    } catch (error) {
+      console.error('Error completing streak:', error)
+    } finally {
+      setIsCompleting(false)
+      setShowCompleteConfirm(false)
+      setPendingCompleteId(null)
     }
   }
 
@@ -263,24 +283,39 @@ function StreakCard({ streak, onComplete, onEdit, onDelete, index }: StreakCardP
         </CardContent>
         <CardFooter>
           <Button
+            size="sm"
             variant={isCompletedToday ? 'outline' : 'default'}
-            onClick={handleComplete}
-            disabled={isCompletedToday}
-            className={`w-full gap-2 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis ${
+            className={cn(
+              'w-full transition-all duration-200',
               isCompletedToday 
-                ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 border-green-200 dark:border-green-800/50 hover:bg-green-50 dark:hover:bg-green-900/30' 
-                : 'bg-gradient-to-r from-green-500 to-lime-500 hover:from-green-600 hover:to-lime-600 text-white shadow-md hover:shadow-lg hover:-translate-y-0.5'
-            }`}
+                ? 'bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300 dark:hover:bg-green-900/30'
+                : 'bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-400 hover:to-emerald-600 text-white shadow-md hover:shadow-lg hover:scale-105 transform transition-all duration-300',
+              isCompleting && 'opacity-70'
+            )}
+            onClick={handleCompleteClick}
+            disabled={isCompletedToday || isCompleting}
           >
             {isCompletedToday ? (
               <>
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4 mr-2" />
                 Completed Today
               </>
+            ) : isCompleting ? (
+              'Processing...'
             ) : (
-              "Complete for Today"
+              'Complete Today'
             )}
           </Button>
+          <ConfirmDialog
+            open={showCompleteConfirm}
+            onOpenChange={setShowCompleteConfirm}
+            onConfirm={handleConfirmComplete}
+            title="Complete Streak"
+            description={`Mark "${streak.name}" as completed for today?`}
+            confirmText="Yes, complete it"
+            cancelText="No, cancel"
+            loading={isCompleting}
+          />
         </CardFooter>
       </Card>
     </motion.div>

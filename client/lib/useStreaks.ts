@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from './auth-context';
 import { api } from './api';
-import { useToast } from '../hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Streak {
     id: string;
@@ -22,24 +21,24 @@ export type StreakUpdate = {
 
 export function useStreaks(token: string | null) {
     const [streaks, setStreaks] = useState<Streak[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const { toastSuccess, toastError, toastInfo } = useToast()
 
     useEffect(() => {
         const fetchStreaks = async () => {
             if (!token) {
-                setLoading(false);
+                setIsLoading(false);
                 return;
             }
             try {
-                setLoading(true);
+                setIsLoading(true);
                 const data = await api.getStreaks(token);
                 setStreaks(data);
             } catch (error) {
                 console.error('Error fetching streaks:', error);
                 toastError('Error fetching streaks');
             } finally {
-                setLoading(false);
+                setIsLoading(false);
             }
         };
 
@@ -49,13 +48,16 @@ export function useStreaks(token: string | null) {
     const createStreak = async (name: string, description: string) => {
         if (!token) return;
         try {
+            setIsLoading(true);
             const newStreak = await api.createStreak(token, { name, description });
             setStreaks([...streaks, newStreak]);
-            toastSuccess(`Streak ${newStreak.name} created successfully`);
+            toastSuccess(`Streak "${newStreak.name}" created successfully`);
         } catch (error) {
             console.error('Error creating streak:', error);
             toastError('Error creating streak');
             throw error;
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -66,7 +68,7 @@ export function useStreaks(token: string | null) {
             setStreaks(streaks.map(streak => 
                 streak.id === id ? updatedStreak : streak
             ));
-            toastSuccess(`Streak ${updatedStreak.name} updated successfully`);
+            toastInfo(`Streak "${updatedStreak.name}" updated successfully`);
         } catch (error) {
             console.error('Error updating streak:', error);
             toastError('Error updating streak');
@@ -81,7 +83,6 @@ export function useStreaks(token: string | null) {
             setStreaks(streaks.map(streak => 
                 streak.id === id ? updatedStreak : streak
             ));
-            toastSuccess(`Streak ${updatedStreak.name} completed successfully`);
         } catch (error) {
             console.error('Error completing streak:', error);
             toastError('Error completing streak');
@@ -92,19 +93,22 @@ export function useStreaks(token: string | null) {
     const deleteStreak = async (id: string) => {
         if (!token) return;
         try {
+            setIsLoading(true);
             await api.deleteStreak(token, id);
             setStreaks(streaks.filter(streak => streak.id !== id));
-            toastSuccess(`Streak ${streaks.find(streak => streak.id === id)?.name} deleted successfully`);
+            toastSuccess(`Streak "${streaks.find(streak => streak.id === id)?.name}" deleted successfully`);
         } catch (error) {
             console.error('Error deleting streak:', error);
             toastError('Error deleting streak');
             throw error;
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return {
         streaks,
-        loading,
+        loading: isLoading,
         createStreak,
         updateStreak,
         completeStreak,

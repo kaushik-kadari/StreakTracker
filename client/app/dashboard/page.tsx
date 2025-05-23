@@ -1,9 +1,9 @@
 "use client"
-
 import { useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { DeleteTaskDialog } from "@/components/delete-task-dialog"
 import { useToast } from "@/hooks/use-toast"
 import Header from "@/components/header"
 import StreakList from "@/components/streak-list"
@@ -63,7 +63,7 @@ function DashboardContent() {
   // Initialize all hooks unconditionally at the top level
   const router = useRouter();
   const { toastSuccess } = useToast();
-  const { user, isLoading: authLoading, token } = useAuth();
+  const { user, isLoading, token } = useAuth();
   
   // State
   const [newStreakOpen, setNewStreakOpen] = useState(false);
@@ -76,7 +76,8 @@ function DashboardContent() {
     createStreak, 
     updateStreak, 
     completeStreak, 
-    deleteStreak 
+    deleteStreak,
+    loading: streaksLoading 
   } = useStreaks(token || '');
   
   const { 
@@ -84,8 +85,15 @@ function DashboardContent() {
     createTask, 
     updateTask, 
     toggleTask, 
-    deleteTask 
+    deleteTask,
+    taskToDelete,
+    setTaskToDelete,
+    isDeleting,
+    confirmDelete,
+    loading: tasksLoading 
   } = useTasks(token || '');
+  
+  const isDataLoading = !isClient || (token ? (streaksLoading || tasksLoading) : false);
   
   // Memoized handlers
   const handleAddStreak = useAddStreakHandler(
@@ -102,6 +110,16 @@ function DashboardContent() {
   
   // Handle streak achievements
   useStreakAchievements(streaks, toastSuccess);
+  
+  const loading = isDataLoading || !isClient;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#ece9e9] via-[#fff] to-[#f5f5f5] dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -191,14 +209,21 @@ function DashboardContent() {
         </div>
       </main>
 
-      <NewStreakDialog 
-        open={newStreakOpen} 
-        onOpenChange={(open: boolean) => {
-          setNewStreakOpen(open)
-          if (!open) setEditingStreak(null)
-        }} 
+      <NewStreakDialog
+        open={newStreakOpen}
+        onOpenChange={(open) => {
+          setNewStreakOpen(open);
+          if (!open) setEditingStreak(null);
+        }}
         onAdd={handleAddStreak}
         initialData={editingStreak}
+      />
+      <DeleteTaskDialog
+        open={!!taskToDelete}
+        onOpenChange={(open) => !open && setTaskToDelete(null)}
+        onConfirm={confirmDelete}
+        taskName={taskToDelete?.task || ''}
+        isLoading={isDeleting}
       />
     </div>
   )
